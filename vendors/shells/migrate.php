@@ -7,6 +7,9 @@ class MigrateShell extends Shell {
 
     function initialize() {
         $this->path = $this->params['working'] . DS . 'config' . DS . 'sql' . DS . 'migrations';
+        if ( !file_exists($this->path) ) {
+            exec("mkdir {$this->path}");
+        }
 
         $this->_loadDbConfig();
         $this->useDbConfig = $this->DbConfig->default;
