@@ -1,18 +1,19 @@
 <?php
-App::import('ConnectionManager');
+App::uses('Shell', 'Console');
+App::uses('ConnectionManager', 'Model');
+App::uses('Folder', 'Utility');
 class MigrateShell extends Shell {
 
     var $path = null;
     var $uses = array('schema_migrations');
 
     function initialize() {
-        $this->path = $this->params['working'] . DS . 'config' . DS . 'sql' . DS . 'migrations';
+        $this->path = APP . DS . 'Config' . DS . 'SQLMigration';
         if ( !file_exists($this->path) ) {
             exec("mkdir {$this->path}");
         }
 
-        $this->_loadDbConfig();
-        $this->useDbConfig = $this->DbConfig->default;
+        $this->useDbConfig = ConnectionManager::getDataSource('default')->config;
     }
 
     function help() {
@@ -122,7 +123,7 @@ class MigrateShell extends Shell {
         if ( !in_array('schema_migrations', $tables) ) {
             $this->out('Creating schema_migrations table.');
 
-            $db =& ConnectionManager::getDataSource('default');
+            $db = ConnectionManager::getDataSource('default');
             $db->cacheSources = false;
             $db->query("CREATE TABLE `schema_migrations` (
                 `version` varchar(255) NOT NULL,
@@ -134,7 +135,7 @@ class MigrateShell extends Shell {
     }
 
 	function getAllTables($useDbConfig = 'default') {
-		$db =& ConnectionManager::getDataSource($useDbConfig);
+		$db = ConnectionManager::getDataSource($useDbConfig);
 		$usePrefix = empty($db->config['prefix']) ? '': $db->config['prefix'];
 		if ($usePrefix) {
 			$tables = array();
