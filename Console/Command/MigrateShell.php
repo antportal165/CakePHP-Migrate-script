@@ -5,7 +5,7 @@ App::uses('Folder', 'Utility');
 class MigrateShell extends Shell {
 
     var $path = null;
-    var $uses = array('schema_migrations');
+    var $uses = array('mysql_schema_migrations');
 
     function initialize() {
         $this->path = APP . DS . 'Config' . DS . 'SQLMigration';
@@ -54,9 +54,9 @@ class MigrateShell extends Shell {
         $this->checkMigrationTable();
 
         // pull which numbers have been run and sort them
-        $schemaVersions = $this->schema_migrations->query('SELECT * FROM schema_migrations');
+        $schemaVersions = $this->mysql_schema_migrations->query('SELECT * FROM mysql_schema_migrations');
         if ( !empty($schemaVersions) ) {
-            $schemaVersions = Set::extract($schemaVersions, '/schema_migrations/version');
+            $schemaVersions = Set::extract($schemaVersions, '/mysql_schema_migrations/version');
             sort($schemaVersions);
         }
 
@@ -104,7 +104,7 @@ class MigrateShell extends Shell {
 
         exec($cmd, $output, $return);
         if ( $return == 0 ) {
-            $this->schema_migrations->save(array('version' => $num));
+            $this->mysql_schema_migrations->save(array('version' => $num));
         } else {
             $this->error("File $filename failed", "Reason: \n". implode("\n", $output));
         }
@@ -120,12 +120,12 @@ class MigrateShell extends Shell {
     // Then load the model
     function checkMigrationTable() {
         $tables = $this->getAllTables();
-        if ( !in_array('schema_migrations', $tables) ) {
-            $this->out('Creating schema_migrations table.');
+        if ( !in_array('mysql_schema_migrations', $tables) ) {
+            $this->out('Creating mysql_schema_migrations table.');
 
             $db = ConnectionManager::getDataSource('default');
             $db->cacheSources = false;
-            $db->query("CREATE TABLE `schema_migrations` (
+            $db->query("CREATE TABLE `mysql_schema_migrations` (
                 `version` varchar(255) NOT NULL,
                 UNIQUE KEY `unique_schema_migrations` (`version`)
             )");
